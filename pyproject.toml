@@ -1,0 +1,19 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "star_gate"
+version = "0.1.0"
+authors = [{name = "Jean-Christophe Taveau", email = "jean-christophe.taveau@u-bordeaux.fr"}]
+readme = "README.md"
+license = "GPL-3.0-or-later"
+license-files = ["LICENSE"]
+description = "A package for reading/writing STAR and mmCIF file"
+requires-python = ">=3.11"
+dependencies = [
+    "pandas"
+]
+
+[tool.setuptools.packages.find]
+where = ["src"]
