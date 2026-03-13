@@ -141,7 +141,7 @@ class StarGate:
                         if type(v) == str and len(v.split()) > 1:
                             msg += f'\'{v}\'  '
                         else:
-                            msg += f'{v}  '                            
+                            msg += f'{v}  '
                     msg += '\n'
                 msg += '\n#\n'
             else:
@@ -168,7 +168,7 @@ class StarGate:
                 if type(v) == str and len(v.split()) > 1:
                     msg += f'\'{v}\'  '
                 else:
-                    msg += f'{v}  '                            
+                    msg += f'{v}  ' 
             msg += '\n'
         msg += '#\n'
 
