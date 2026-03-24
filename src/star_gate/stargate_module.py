@@ -99,11 +99,20 @@ class StarGate:
     
     def parseSTAR(self,txt):
         ## First Pass
-        tokens = tokenize(txt);
+        tokens = tokenize(txt)
         ## Second Pass - Parse
-        self.db = parser(tokens);
+        self.db = parser(tokens)
 
-
+    def to_json(self):
+        """Build JSON object from StarGate datablocks"""
+        d = self.db # Datablocks
+        for k, v in d.items():
+            if isinstance(v, pd.DataFrame):
+                d[k] = v.T.to_dict(orient='split')
+            elif type(v) == dict:
+                d[k] = self.to_json(v)
+        return d
+    
     def to_object(self,mmcif=False):
         def obj_dic(d):
             top = type('new', (object,), d)
