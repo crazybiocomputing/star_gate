@@ -6,12 +6,20 @@ from .star.star_parser import parser
 
            
 class Block:
-    def __init__(self,dic):
-        self.db = dic
+    def __init__(self,blockname):
+        self.db['_id_'] = blockname
     
     def id(self):
-        return self.db['id']
+        return self.db['_id_']
     
+    def name(self):
+        return self.db['_id_']
+    
+    def set(self,key,value):
+        self.db[key] = value
+    
+    def add(self,table):
+        self.db['table'] = table
     def table(self):
         if 'table' in self.db.keys():
             return Table(self.db['table'])
@@ -21,28 +29,28 @@ class Block:
         return self.db[category][attr]
 
 class Table:
-    def __init__(self,dic):
-        self.table = dic
+    def __init__(self,data=None,columns=None):
+        self.df = pd.DataFrame(data=data, columns=columns)
     
     def headers(self):
-        return self.table['header']
+        return self.df.columns
     
     def rows(self):
-        return self.table['rows']
+        return self.df.data
 
     def dataframe(self,colindex=0):
         # creating DataFrame
-        df = pd.DataFrame(self.table['rows'], columns=self.table['header'])
-        df.set_index(self.table['header'][colindex],inplace=True,drop=False)
+        df = pd.DataFrame(self.table['data'], columns=self.table['columns'])
+        df.set_index(self.table['columns'][colindex],inplace=True,drop=False)
         return df
         
     def row(self,i):
-        return self.table['rows'][i]
+        return self.table['data'][i]
     
     def column(self,headname):
         i = self.headers().index(headname)
         col = []
-        for row in self.table['rows']:
+        for row in self.table['data']:
           col.append(row[i])
         return col
     
@@ -54,7 +62,10 @@ class StarGate:
     @property
     def blocks(self):
         return self.db
-        
+    
+    def add(self,block):
+        self.db[block.id] = block
+
     def read(self,filename):
         with open(filename) as f:
             self.parseSTAR(f.read()) 
