@@ -7,6 +7,8 @@ from .star.star_parser import parser
            
 class Block:
     def __init__(self,blockname):
+        self.db = {}
+        self.id = blockname
         self.db['_id_'] = blockname
     
     def id(self):
@@ -20,6 +22,7 @@ class Block:
     
     def add(self,table):
         self.db['table'] = table
+
     def table(self):
         if 'table' in self.db.keys():
             return Table(self.db['table'])
@@ -27,12 +30,27 @@ class Block:
     
     def value_of(self,category,attr='value'):
         return self.db[category][attr]
+    
+    def __repr__(self):
+        return self.__str__()
+
+    def __str__(self):
+        s = f'data_{self.id}\n'
+        for k in self.db.keys():
+            if k == 'table':
+                s += str(self.db['table'])
+            else:
+                s+= f'{k} {self.db[k]}\n'
+        return s
 
 class Table:
     def __init__(self,data=None,columns=None):
         self.df = pd.DataFrame(data=data, columns=columns)
     
-    def headers(self):
+    def from_dict(self,dict):
+        self.df = pd.DataFrame(dict)
+
+    def columns(self):
         return self.df.columns
     
     def rows(self):
@@ -54,6 +72,17 @@ class Table:
           col.append(row[i])
         return col
     
+    def __repr__(self):
+        return self.__str__()
+
+    def __str__(self):
+        s = '#\nloop_\n'
+        for h in self.df.columns:
+            s += f'{h}\n'
+        for row in self.df.data:
+            s += ' '.join([d for d in row]) + '\n'
+        s += '#\n'
+        return s
     
 class StarGate:
     def __init__(self):
@@ -70,7 +99,7 @@ class StarGate:
         with open(filename) as f:
             self.parseSTAR(f.read()) 
     
-    def save(self,blocks,filename):
+    def save(self,filename):
         """
             Save blocks as Dictionary containing key/value and/or table
             block = {
@@ -82,8 +111,8 @@ class StarGate:
             }
         """
         with open(filename,'a') as f:
-            for blockid in blocks.keys():
-                txt = self._block_to_string(blocks[blockid],blockid)
+            for blockid in self.db.keys():
+                txt = self._block_to_string(self.db[blockid],blockid)
                 f.write(txt)
     
     def save_tables(self,blocks,filename):
@@ -147,7 +176,7 @@ class StarGate:
 
     def _block_to_string(self,block,blockid):
         # Create input star file
-        msg = f'data_{blockid}\n\n'
+        msg = f'data_{blockid}\n#\n'
         for key in block.keys():
             if key == 'table':
                 msg +='loop_\n'
@@ -195,5 +224,12 @@ class StarGate:
         msg += f'\n# End of datablock {blockid}\n\n'
         return msg
 
+    def __repr__(self):
+        return self.__str__()
 
+    def __str__(self):
+        s = ''
+        for blck in self.db.values():
+            s += str(blck)
+        return s
     
