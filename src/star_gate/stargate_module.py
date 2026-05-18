@@ -4,29 +4,57 @@ from .star.star_common import CIF
 from .star.star_tokenizer import tokenize
 from .star.star_parser import parser
 
-           
+        
 class Block:
-    def __init__(self,blockname):
-        self.db = {}
-        self.id = blockname
-        self.db['_id_'] = blockname
+    def __init__(self,data,block_type='star'):
+        """
+        Empty STAR|mmCIF Datablock
+        type: 'star' or 'cif'
+        """
+        if block_type in ['star','cif']:
+            self.type = block_type if block_type == 'star' else 'cif'
+        self.db = data
+        self._id = data['id']
     
+    @property
     def id(self):
-        return self.db['_id_']
+        return self._id
     
-    def name(self):
-        return self.db['_id_']
+    @id.setter
+    def id(self,blockname):
+        self._id = blockname
     
+    def get(self,key):
+        if key in self.db.keys():
+            return self.db[key]
+        else:
+            return None
+
     def set(self,key,value):
         self.db[key] = value
-    
-    def add(self,table):
-        self.db['table'] = table
+            
+    def add(self,tdata,tname = 'table'):
+        if self.type == 'star' and tname != 'table':
+            return 'ERROR: A table in a STAR file cannot have a name'
+        self.db[tname] = tdata
 
-    def table(self):
+    def table(self,tname = 'table'):
         if 'table' in self.db.keys():
-            return Table(self.db['table'])
+            return Table(self.db[tname])
         return None
+    
+    def dataframe(self):
+        if self.type == 'star':
+            # Merge key/values and table in one single dataframe
+            # Each key corresponds to a column of a constant (`value`) 
+            if 'table' in self.db.keys():
+                # Step #1 get the table
+                df = self.table()
+                for key,value in self.db.items():
+                    df.loc[:, key] = value
+            else:
+                df = pd.DataFrame(self.db.values(),columns=self.db.keys())
+            return df
     
     def value_of(self,category,attr='value'):
         return self.db[category][attr]
@@ -99,21 +127,35 @@ class StarGate:
         with open(filename) as f:
             self.parseSTAR(f.read()) 
     
-    def save(self,filename):
+    def parse(self,data):
+        self.parseSTAR(data) 
+    
+    def save(self,filename,orient='split'):
         """
-            Save blocks as Dictionary containing key/value and/or table
-            block = {
-                'key': value,
-                'table' : {
-                    'rows|data': [..],
-                    'columns' : [..]
-                }
+        Save blocks as Dictionary containing key/value and/or table
+        block = {
+            'key': value,
+            'table' : {
+                'rows|data': [..],
+                'columns' : [..]
             }
+        }
+        orient : Determines the type of the values of the dictionary.
+        'dict' (default) : dict like {column -> {index -> value}}
+        'list' : dict like {column -> [values]}
+        'series' : dict like {column -> Series(values)}
+        'split' : dict like {'index' -> [index], 'columns' -> [columns], 'data' -> [values]}
+        'tight' : dict like {'index' -> [index], 'columns' -> [columns], 'data' -> [values], 'index_names' -> [index.names], 'column_names' -> [column.names]}
+        'records' : list like [{column -> value}, … , {column -> value}]
+        'index' : dict like {index -> {column -> value}}
+
         """
-        with open(filename,'a') as f:
-            for blockid in self.db.keys():
-                txt = self._block_to_string(self.db[blockid],blockid)
-                f.write(txt)
+        if orient in ['dict', 'list', 'series', 'split', 'tight', 'records', 'index']:
+            with open(filename,'a') as f:
+                for blockid in self.db.keys():
+                    txt = self._block_to_string(self.db[blockid],blockid)
+                    f.write(txt)
+        return 'Unknown mode'
     
     def save_tables(self,blocks,filename):
         """
@@ -125,10 +167,14 @@ class StarGate:
                 txt = self._dataframe_to_string(blocks[blockid],blockid)
                 f.write(txt)
     
-    def datablock(self,blockname):
-        for db in self.db['datablocks']:
-            if db['id'] == blockname:
-                return Block(db)
+    def datablock(self,blockname=None):
+        if blockname is None:
+            b = next(iter(self.db))
+            return Block(b)
+        # if blockname set
+        for bn in self.db.keys():
+            if bn == blockname:
+                return Block(self.db[bn])
         return None
     
     def table_of(self,blockname):

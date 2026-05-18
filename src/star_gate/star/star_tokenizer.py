@@ -27,6 +27,9 @@ def isMultiLine(w):
 def isString(w):
   return isFirst('\'',w);
 
+def isStringDoubleQuote(w):
+  return isFirst('\"',w)
+
 def isNumber(w):
   try:
     float_value = float(w)
@@ -120,6 +123,10 @@ keywords = [
   {
     'predicate': isString,
     'newToken': stringToken(CIF.STRING, lambda word: word[-1] != '\'')
+  },
+  {
+    'predicate': isStringDoubleQuote,
+    'newToken': stringToken(CIF.STRING, lambda word: word[-1] != '\"')
   },
   {
     'predicate': isWord,

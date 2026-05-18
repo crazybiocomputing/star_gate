@@ -17,3 +17,10 @@ dependencies = [
 
 [tool.setuptools.packages.find]
 where = ["src"]
+
+[tool.pytest.ini_options]
+minversion = "7.0"
+addopts = "-ra --tb=short"
+testpaths = [
+    "tests",
+]
