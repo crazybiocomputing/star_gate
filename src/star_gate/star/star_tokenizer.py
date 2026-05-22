@@ -2,6 +2,7 @@
 #####################::: T O K E N I Z E R :::#####################
 
 import re
+import textwrap
 from .star_common import CIF
 
 ###### Predicates ######
@@ -150,13 +151,13 @@ def tokenize(txt):
     mmCIF Tokenizer
   '''
   
-  # Remove comments
-  clean = re.sub('#.*\n','\n',txt)
+  # Remove leading spaces/indentations and remove comments
+  clean = re.sub('#.*\n','\n',textwrap.dedent(txt))
   # Split
   words = re.split(r'(\s+)',clean)
 
-  tokens = [];
-  index = 0;
+  tokens = []
+  index = 0
 
   ## TODO Use (tail) recursion
   while index < len(words):

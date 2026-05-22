@@ -18,10 +18,10 @@ def parseComment(tok,obj):
 def parseEOL(tok,obj):
     obj_block = obj['_admin_datablock']
     ## Convert to dataframe if CIF.TABLE
-    if obj['_admin_state'] == CIF.TABLE:
-        tablename = obj['_admin_current']
-        obj_block[tablename] = pd.DataFrame(obj_block[tablename]['rows'],
-                                            columns=obj_block[tablename]['header'])
+    # if obj['_admin_state'] == CIF.TABLE:
+    #     tablename = obj['_admin_current']
+    #     obj_block[tablename] = pd.DataFrame(obj_block[tablename]['rows'],
+    #                                         columns=obj_block[tablename]['header'])
     # Reset 
     obj['_admin_next'] = [CIF.DATABLOCK,CIF.TOKEN,CIF.TABLE]
     obj['_admin_state'] = CIF.NONE
@@ -197,7 +197,7 @@ def parseDataBlock(tok,obj):
     # print('new DB',tok['v'])
     id = tok['v'] if len(tok['v']) > 1 else 'default'
     obj['_admin_next'] = [CIF.TOKEN,CIF.TABLE] # TOKEN, TABLE
-    db = {'id': id}
+    db = {'db_id': id}
     obj['datablocks'][id] = db # .append(db)
     obj['_admin_datablock'] = db
     obj['_admin_current'] = None

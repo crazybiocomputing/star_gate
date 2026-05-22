@@ -4,21 +4,48 @@ from .star.star_common import CIF
 from .star.star_tokenizer import tokenize
 from .star.star_parser import parser
 
-        
+
 class Block:
-    def __init__(self,data,block_type='star'):
+    def __init__(self,id='default',block_type='star'):
         """
         Empty STAR|mmCIF Datablock
-        type: 'star' or 'cif'
-        """
+        block_type: 'star' or 'cif'
+        """        
+        # Init
         if block_type in ['star','cif']:
-            self.type = block_type if block_type == 'star' else 'cif'
-        self.db = data
-        self._id = data['id']
+            self.type = block_type
+        # private dict
+        self.db = {'db_id': id, 'db_type': block_type}
+        # internal structure of a (Data)Block is a dataframe only for STAR 
+        self._df = None # Only for STAR file
+        self._id = id
+        
+    def from_dict(self,data):
+        if data:
+            if self.type == 'star':
+                # Create the dataframe
+                self._df = self._dataframe(data,self.type)
+            self.db = data
+            self._id = data['db_id'] if 'db_id' in data else 'default'
     
     @property
     def id(self):
         return self._id
+    
+    @property
+    def db_id(self):
+        return self._id
+    
+    @property
+    def df(self):
+        if self._df is None:
+            self._df = self._dataframe(self.db,self.type)    
+        return self._df
+    
+    @property
+    def data(self):
+        print(self.db)
+        return self.db
     
     @id.setter
     def id(self,blockname):
@@ -32,28 +59,39 @@ class Block:
 
     def set(self,key,value):
         self.db[key] = value
-            
+        if self._df is not None:
+            self._df.loc[:,key] = value
+             
     def add(self,tdata,tname = 'table'):
         if self.type == 'star' and tname != 'table':
             return 'ERROR: A table in a STAR file cannot have a name'
         self.db[tname] = tdata
 
     def table(self,tname = 'table'):
-        if 'table' in self.db.keys():
-            return Table(self.db[tname])
+        if tname in self.db.keys():
+            print('Create table')
+            t = Table(tname)
+            t.from_data(self.db[tname])
+            return t
         return None
     
-    def dataframe(self):
-        if self.type == 'star':
+    def _dataframe(self,dic,blcktype):
+        print(dic)
+        if blcktype == 'star':
             # Merge key/values and table in one single dataframe
             # Each key corresponds to a column of a constant (`value`) 
-            if 'table' in self.db.keys():
+            if 'table' in dic.keys():
                 # Step #1 get the table
-                df = self.table()
-                for key,value in self.db.items():
-                    df.loc[:, key] = value
+                t = Table('table')
+                print(dic['table'])
+                t.from_data(dic['table'])
+                df = t.df
+                for key,value in dic.items():
+                    if key != 'table':
+                        df.loc[:, key] = value
+                print(df)
             else:
-                df = pd.DataFrame(self.db.values(),columns=self.db.keys())
+                df = pd.DataFrame([dic.values()],columns=dic.keys())
             return df
     
     def value_of(self,category,attr='value'):
@@ -72,11 +110,20 @@ class Block:
         return s
 
 class Table:
-    def __init__(self,data=None,columns=None):
-        self.df = pd.DataFrame(data=data, columns=columns)
+    def __init__(self,tname = 'table'):
+        """
+        Create an empty table entitled `tname`
+        """
+        self._id = tname
+        
+    def from_data(self,data=None,*,columns=None):
+        if isinstance(data,dict):
+            self.df = pd.DataFrame(data['rows'],columns=data['header'])
+        else:
+            self.df = pd.DataFrame(data=data, columns=columns)
     
-    def from_dict(self,dict):
-        self.df = pd.DataFrame(dict)
+    # def from_dict(self,dict):
+    #     self.df = pd.DataFrame(dict,index=[0])
 
     def columns(self):
         return self.df.columns
@@ -101,18 +148,21 @@ class Table:
         return col
     
     def __repr__(self):
-        return self.__str__()
+        return self.df.__str__()
 
-    def __str__(self):
-        s = '#\nloop_\n'
-        for h in self.df.columns:
-            s += f'{h}\n'
-        for row in self.df.data:
-            s += ' '.join([d for d in row]) + '\n'
-        s += '#\n'
-        return s
+    # def __str__(self):
+    #     s = '#\nloop_\n'
+    #     for h in self.df.columns:
+    #         s += f'{h}\n'
+    #     for row in self.df.values:
+    #         s += ' '.join([d for d in row]) + '\n'
+    #     s += '#\n'
+    #     return s
     
 class StarGate:
+    """
+    Create an empty StarGate consisting of a collection of DataBlock
+    """
     def __init__(self):
         self.db = {}
 
@@ -170,11 +220,11 @@ class StarGate:
     def datablock(self,blockname=None):
         if blockname is None:
             b = next(iter(self.db))
-            return Block(b)
+            return b # Block(b)
         # if blockname set
         for bn in self.db.keys():
             if bn == blockname:
-                return Block(self.db[bn])
+                return self.db[bn] # Block(self.db[bn])
         return None
     
     def table_of(self,blockname):
@@ -187,7 +237,12 @@ class StarGate:
         ## First Pass
         tokens = tokenize(txt)
         ## Second Pass - Parse
-        self.db = parser(tokens)
+        blocks = parser(tokens)
+        for bid,b in blocks.items():
+            print(b)
+            blck = Block(bid)
+            blck.from_dict(b)
+            self.add(blck)
 
     def to_json(self):
         """Build JSON object from StarGate datablocks"""
