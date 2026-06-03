@@ -21,7 +21,7 @@ def parseEOL(tok,obj):
     # if obj['_admin_state'] == CIF.TABLE:
     #     tablename = obj['_admin_current']
     #     obj_block[tablename] = pd.DataFrame(obj_block[tablename]['rows'],
-    #                                         columns=obj_block[tablename]['header'])
+    #                                         columns=obj_block[tablename]['columns'])
     # Reset 
     obj['_admin_next'] = [CIF.DATABLOCK,CIF.TOKEN,CIF.TABLE]
     obj['_admin_state'] = CIF.NONE
@@ -40,11 +40,11 @@ def setHeader(cat,attr,obj) :
   if cat not in obj_block:
     # Create Table
     obj_block[cat] = {
-      'header': [],
+      'columns': [],
       'rows': [[]]
     }
 
-  obj_block[cat]['header'].append(attr)
+  obj_block[cat]['columns'].append(attr)
   obj['_admin_current'] = cat # Current Category to fill in
   obj['_admin_next'] = [CIF.TOKEN,CIF.NUMBER,CIF.STRING,CIF.WORD]
   return obj
@@ -138,7 +138,7 @@ def setRowValue(tok,obj):
     
     table = obj_block[obj['_admin_current']]
     last = len(table['rows']) - 1
-    if len(table['rows'][last]) >= len(table['header']): 
+    if len(table['rows'][last]) >= len(table['columns']): 
         table['rows'].append([]) # Add a new row in the table
         last += 1 # Update
     

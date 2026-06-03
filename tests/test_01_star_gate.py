@@ -23,11 +23,11 @@ def test_parse_simple_star_block():
     _chevrons  7
     """
     
-    cargo = StarGate()
-    cargo.parse(mock_star_data)
+    starship = StarGate()
+    starship.parse(mock_star_data)
 
     # 2. Get datablock
-    db = cargo.datablock('global')
+    db = starship.datablock('global')
     
     # 3. Assertions
     assert db.id == "global"
@@ -50,11 +50,11 @@ def test_parse_simple_star_table():
     #
     """
     
-    cargo = StarGate()
-    cargo.parse(mock_star_data)
+    starship = StarGate()
+    starship.parse(mock_star_data)
 
     # 2. Get datablock
-    db = cargo.datablock('cryoem')
+    db = starship.datablock('cryoem')
     print(db.table().df['name'])
     # 3. Assertions
     assert db.id == "cryoem"
@@ -85,11 +85,11 @@ def test_parse_simple_star_keyvalue_table():
     #
     """
 
-    cargo = StarGate()
-    cargo.parse(mock_star_data)
+    starship = StarGate()
+    starship.parse(mock_star_data)
 
     # 2. Get datablock
-    db = cargo.datablock('cryoem')
+    db = starship.datablock('cryoem')
     # 3. Assertions
     expected_dict = {
         'db_id': 'cryoem',
@@ -101,7 +101,7 @@ def test_parse_simple_star_keyvalue_table():
                 ['Joachim', 'Frank'    ],
                 ['Richard', 'Henderson']
             ],
-            'header': ['first_name','name']
+            'columns': ['first_name','name']
         }
     }
     expected_df =  pd.DataFrame(
@@ -112,20 +112,20 @@ def test_parse_simple_star_keyvalue_table():
         ],
         columns = ['db_id','first_name','name','scientific_field','nobel_year']
     )
-    print(db.data)
+    print(db.to_star(),starship.db,starship.save('test.star'))
     assert db.db_id == "cryoem"
-    assert db.data == expected_dict
+    assert db.to_star() == expected_dict
     pd.testing.assert_frame_equal(db.df, expected_df, check_like = True)
 
 def test_parse_simple_star_file():
     # 1. Load STAR file
     # fixture_path = os.path.join(os.path.dirname(__file__), "fixtures", "sample_galaxy.star")
     file_path = Path(__file__).parent / "fixtures" / "galaxy.star"
-    cargo = StarGate()
-    cargo.read(file_path)
+    starship = StarGate()
+    starship.read(file_path)
 
     # 2. Get datablock
-    db = cargo.datablock('global')
+    db = starship.datablock('global')
 
     # 3. Assertions
     assert db.id == "global"

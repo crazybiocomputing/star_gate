@@ -7,17 +7,17 @@ import star_gate as sg
 
 
 def test_stargate_initialization():
-    cargo = sg.StarGate()
+    starship = sg.StarGate()
     # Datablock `global`
     blck = sg.Block('global')
     # Add three key/value pairs
     blck.set('gate_id',"SG-1")
     blck.set('galaxy',"Milky Way")
     blck.set('chevrons',7)
-    cargo.add(blck)
+    starship.add(blck)
 
     # 2. Get datablock
-    db = cargo.datablock('global')
+    db = starship.datablock('global')
     print(type(db),db.id)
     print(db.df)
     # 3. Assertions
