@@ -147,8 +147,8 @@ class Block:
                             sf.write(f'{v:<20} ')
                         sf.write('\n')
                     sf.write('#\n')
-            else:
-                sf.write(f'_{key:<30} {self.db[key]}\n')
+                else:
+                    sf.write(f'_{key:<30} {self.db[key]}\n')
 
     def __repr__(self):
         return self.__str__()
