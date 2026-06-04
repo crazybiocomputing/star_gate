@@ -7,11 +7,11 @@ from star_gate import StarGate
 
 def test_stargate_initialization():
     # Arrange & Act
-    gate = StarGate()
+    starship = StarGate()
     
     # Assert
-    assert gate is not None
-    # assert gate.is_active == False
+    assert starship is not None
+    # assert gate.is_active ==p False
 
 def test_parse_simple_star_block():
     # 1. Minimal, valid STAR string
@@ -35,7 +35,23 @@ def test_parse_simple_star_block():
     assert db.get("galaxy") == "Milky Way"
     assert db.get("chevrons") == 7
 
-def test_parse_simple_star_table():
+def test_stargate_empty_table():
+    # 1. Minimal, valid STAR string
+    mock_star_data = """
+    data_cryoem
+    #
+    loop_
+    _name
+    _field
+    _year
+    #
+    """
+    
+    starship = StarGate()
+    starship.parse(mock_star_data)
+    print(starship.datablock('cryoem').table())
+
+def test_parse_simple_star_table_column():
     # 1. Minimal, valid STAR string
     mock_star_data = """
     data_cryoem
@@ -55,17 +71,18 @@ def test_parse_simple_star_table():
 
     # 2. Get datablock
     db = starship.datablock('cryoem')
-    print(db.table().df['name'])
+    
     # 3. Assertions
     assert db.id == "cryoem"
     pd.testing.assert_series_equal(
-        db.table().df['name'],
+        db.table().column('name'),
         pd.Series(['Jacques Dubochet','Joachim Frank','Richard Henderson'],name='name')
     )
     pd.testing.assert_series_equal(
-        db.table().df['field'],
+        db.table().column('field'),
         pd.Series(['chemistry','chemistry','chemistry'],name='field')
     )
+
 
 def test_parse_simple_star_keyvalue_table():
     # 1. Minimal, valid STAR string

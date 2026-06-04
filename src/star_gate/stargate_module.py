@@ -27,6 +27,15 @@ class Block:
                 # Create the dataframe
                 self._df = self._dataframe(data,self.type)
             self.db = data
+            # Get the table(s)
+            for k in self.db.keys():
+                if isinstance(self.db[k],dict):
+                    # We assume this is a table
+                    tname = k
+                    # Create the table if any
+                    t = Table(tname)
+                    t.from_data(self.db[tname])
+                    self.db[k] = t
             self._id = data['db_id'] if 'db_id' in data else 'default'
     
     @property
@@ -66,14 +75,16 @@ class Block:
     def add(self,tdata,tname = 'table'):
         if self.type == 'star' and tname != 'table':
             return 'ERROR: A table in a STAR file cannot have a name'
-        self.db[tname] = tdata
+        if isinstance(tdata,Table):
+            self.db[tname] = tdata
+        else:
+            t = Table(tname)
+            t.from_data(tdata)
+            self.db[tname] = t
 
     def table(self,tname = 'table'):
         if tname in self.db.keys():
-            print('Create table')
-            t = Table(tname)
-            t.from_data(self.db[tname])
-            return t
+            return self.db[tname]
         return None
     
     def _dataframe(self,dic,blcktype):
@@ -174,20 +185,55 @@ class Table:
         return self.df.data
 
     def dataframe(self,colindex=0):
+        """
+        Obsolete?
+        """
         # creating DataFrame
         df = pd.DataFrame(self.table['data'], columns=self.table['columns'])
         df.set_index(self.table['columns'][colindex],inplace=True,drop=False)
         return df
         
+    def loc(self,irow,icol=None):
+        return self.df.iloc[irow] if icol == None else self.df.iloc[irow,icol]
+    
     def row(self,i):
-        return self.table['data'][i]
+        return self.df.iloc[i]
+    
+    def append(self,row):
+        """
+        Append a row in this table. The row can be a Dictionary or a List
+        """
+        if isinstance(row,dict):
+            self.df.loc[self.df.shape[0]] = row
+        elif isinstance(row,list):
+            self.df.loc[self.df.shape[0]] = row
+        else:
+            print('ERROR: Not supported')
+        # Remove duplicates if any
+        self.df = self.df.drop_duplicates().reset_index(drop=True)
+    
+    def concat(self,rows):
+        """
+        Append several rows in this table. The rows can be a `list[dict]` or `list[list]`
+        """
+        if isinstance(rows[0],dict):
+            row_df = pd.DataFrame(rows)
+        elif isinstance(rows[0],list):
+            row_df = pd.DataFrame(rows, columns=list(self.df.columns))
+        else:
+            print('ERROR: Not supported')
+            return
+        self.df = pd.concat([self.df,row_df], ignore_index=True)
+        # Remove duplicates if any
+        self.drop = self.df.drop_duplicates().reset_index(drop=True)
     
     def column(self,colname):
-        i = self.columns().index(colname)
-        col = []
-        for row in self.table['data']:
-          col.append(row[i])
-        return col
+        """
+        Get all the values of the column `colname`. `colname` could be a single string or a list.
+        Returns a pandas.Series
+        """
+        return self.df[colname]
+    
     
     def __repr__(self):
         return self.df.__str__()
