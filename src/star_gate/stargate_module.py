@@ -137,9 +137,7 @@ class Block:
         for key in self.db.keys():
             value = self.db[key]
             if key != 'db_id' and key != 'db_type':
-                if type(value) is not dict:
-                    sf.write(f'_{key:<30} {self.db[key]}\n')
-                else:
+                if isinstance(value,Table):
                     # The value is a table
                     sf.write('#\nloop_\n')
                     for col in value['columns']:
@@ -149,6 +147,8 @@ class Block:
                             sf.write(f'{v:<20} ')
                         sf.write('\n')
                     sf.write('#\n')
+            else:
+                sf.write(f'_{key:<30} {self.db[key]}\n')
 
     def __repr__(self):
         return self.__str__()
@@ -185,7 +185,7 @@ class Table:
     @columns.setter
     def columns(self, colnames):
         self.df.columns = colnames
-        
+
     def rows(self):
         return self.df.data
 
