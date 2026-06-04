@@ -178,9 +178,14 @@ class Table:
     # def from_dict(self,dict):
     #     self.df = pd.DataFrame(dict,index=[0])
 
+    @property
     def columns(self):
         return self.df.columns
     
+    @columns.setter
+    def columns(self, colnames):
+        self.df.columns = colnames
+        
     def rows(self):
         return self.df.data
 
