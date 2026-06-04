@@ -193,8 +193,11 @@ class Table:
         df.set_index(self.table['columns'][colindex],inplace=True,drop=False)
         return df
         
-    def loc(self,irow,icol=None):
-        return self.df.iloc[irow] if icol == None else self.df.iloc[irow,icol]
+    def iloc(self,irow,icol=None):
+        return self.df.iloc[[irow]] if icol == None else self.df.iloc[[irow],[icol]]
+    
+    def loc(self,row_idx,col=None):
+        return self.df.loc[row_idx] if col == None else self.df.loc[row_idx,col]
     
     def row(self,i):
         return self.df.iloc[i]
@@ -225,7 +228,7 @@ class Table:
             return
         self.df = pd.concat([self.df,row_df], ignore_index=True)
         # Remove duplicates if any
-        self.drop = self.df.drop_duplicates().reset_index(drop=True)
+        self.df = self.df.drop_duplicates().reset_index(drop=True)
     
     def column(self,colname):
         """

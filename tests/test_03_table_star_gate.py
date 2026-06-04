@@ -49,15 +49,21 @@ def test_read_column():
     table = starship.datablock('planets').table()
 
     pd.testing.assert_series_equal(
-        table().row(1),
+        table.row(1),
         pd.Series(
             ['Venus', 224.701, 0.615, '35.0 km/s'],
-            index=['name','field','year'],
+            index=['planet','period_days','period_years', 'velocity'],
             name=1
         )
     )
 
-    assert db.table().loc(0,'name') == 'Jacques Dubochet'
+    assert table.loc(2,'velocity') == '29.8 km/s'
+
+def test_to_dict():
+    starship = sg.StarGate()
+    starship.parse(mock_star_data)
+    table = starship.datablock('planets').table().to_dict()
+    print(table)
 
 def test_append_list_row():
 
