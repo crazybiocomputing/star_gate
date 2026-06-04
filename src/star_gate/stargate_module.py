@@ -237,6 +237,7 @@ class Table:
     def to_dict(self,orient='split'):
         if orient in ['dict' , 'list', 'series', 'split', 'tight', 'records', 'index']:
             return self.df.to_dict(orient)
+        return None
                 
     def __repr__(self):
         return self.df.__str__()
