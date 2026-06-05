@@ -148,7 +148,7 @@ class Block:
         for key in self.db.keys():
             value = self.db[key]
             if key != 'db_id' and key != 'db_type':
-                if isinstance(value,Table):
+                if isinstance(value,Table) and value.df is not None:
                     df = value.df
                     # The value is a table
                     sf.write('#\nloop_\n')
