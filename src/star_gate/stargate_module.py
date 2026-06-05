@@ -114,18 +114,21 @@ class Block:
         for key in self.db.keys():
             value = self.db[key]
             if key != 'db_id' and key != 'db_type':
-                if type(value) is not dict:
-                    s += f'_{key:<30} {self.db[key]}\n'
-                else:
+                if isinstance(value,Table):
                     # The value is a table
                     s += '#\nloop_\n'
-                    for col in value['columns']:
+                    for col in value.columns:
                         s += f'_{col}\n'
-                    for row in value['rows']:
-                        for v in row:
+                    df = value.df
+                    for idx in df.index.values.tolist():
+                        for v in df.loc[idx]:
                             s += f'{v:<20} '
                         s += '\n'
                     s += '#\n'
+                else:
+                    s += f'_{key:<30} {self.db[key]}\n'
+
+        print(s)
         return s
 
     def to_starfile(self,sf):
@@ -138,12 +141,13 @@ class Block:
             value = self.db[key]
             if key != 'db_id' and key != 'db_type':
                 if isinstance(value,Table):
+                    df = value.df
                     # The value is a table
                     sf.write('#\nloop_\n')
-                    for col in value['columns']:
+                    for col in df.columns:
                         sf.write( f'_{col}\n')
-                    for row in value['rows']:
-                        for v in row:
+                    for idx in df.index.values:
+                        for v in df.loc[idx]:
                             sf.write(f'{v:<20} ')
                         sf.write('\n')
                     sf.write('#\n')

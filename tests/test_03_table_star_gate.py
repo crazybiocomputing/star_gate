@@ -57,13 +57,16 @@ def test_read_column():
         )
     )
 
+    assert list(table.columns) == ['planet','period_days','period_years', 'velocity']
     assert table.loc(2,'velocity') == '29.8 km/s'
 
 def test_to_dict():
     starship = sg.StarGate()
     starship.parse(mock_star_data)
     table = starship.datablock('planets').table().to_dict()
-    print(table)
+    print(starship)
+
+    assert 1 == 0
 
 def test_append_list_row():
 

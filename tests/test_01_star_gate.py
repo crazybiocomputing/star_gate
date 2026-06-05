@@ -129,7 +129,7 @@ def test_parse_simple_star_keyvalue_table():
         ],
         columns = ['db_id','first_name','name','scientific_field','nobel_year']
     )
-    print(db.to_star(),starship.db,starship.save('test.star'))
+    print(db.to_star())
     assert db.db_id == "cryoem"
     assert db.to_star() == expected_dict
     pd.testing.assert_frame_equal(db.df, expected_df, check_like = True)
@@ -140,6 +140,7 @@ def test_parse_simple_star_file():
     file_path = Path(__file__).parent / "fixtures" / "galaxy.star"
     starship = StarGate()
     starship.read(file_path)
+    starship.save('test.star')
 
     # 2. Get datablock
     db = starship.datablock('global')
