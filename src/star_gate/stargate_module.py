@@ -185,6 +185,7 @@ class Table:
         Create an empty table entitled `tname`
         """
         self._id = tname
+        self.df = None
         
     def from_data(self,data=None,*,columns=None):
         if isinstance(data,dict):
@@ -228,6 +229,13 @@ class Table:
         """
         Append a row in this table. The row can be a Dictionary or a List
         """
+        if self.df is None:
+            if 'columns' in row and 'rows' in row:
+                self.from_data(row)
+            elif isinstance(row,dict):
+                self.from_data({'rows': [row.values()],'columns':row.keys()})
+            return
+        
         if isinstance(row,dict):
             self.df.loc[self.df.shape[0]] = row
         elif isinstance(row,list):

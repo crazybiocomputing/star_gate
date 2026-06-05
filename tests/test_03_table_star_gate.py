@@ -43,6 +43,15 @@ D = [
     {'planet': 'Neptune',  'period_days': 60182.0,   'period_years': 164.8,   'velocity': '5.4 km/s'},
 ]
 
+def test_empty_table():
+    table = sg.Table()
+    row = {'planet': 'Earth','period_days': 365.256}
+    table.append(row)
+
+    expected_df = pd.DataFrame(data=[['Earth',365.256]],columns=['planet','period_days'])
+
+    pd.testing.assert_frame_equal(table.df, expected_df, check_like = True)
+
 def test_read_column():
     starship = sg.StarGate()
     starship.parse(mock_star_data)
@@ -65,8 +74,16 @@ def test_to_dict():
     starship.parse(mock_star_data)
     table = starship.datablock('planets').table().to_dict()
     print(starship)
-
-    assert 1 == 0
+    expected_dict = {
+        'columns': ['planet', 'period_days', 'period_years', 'velocity'], 
+        'data': [
+            ['Mercury', 87.969, 0.241, '47.9 km/s'], 
+            ['Venus', 224.701, 0.615, '35.0 km/s'], 
+            ['Earth', 365.256, 1.0, '29.8 km/s']
+        ],
+        'index': [0,1,2]
+    }
+    assert table == expected_dict
 
 def test_append_list_row():
 
