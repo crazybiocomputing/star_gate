@@ -124,14 +124,14 @@ class Block:
                     df = value.df
                     for idx in df.index.values:
                         for v in df.loc[idx]:
-                            if re.match(regex,str(v)):
+                            if re.search(regex,str(v)):
                                 v = f'"{v}"'
                             s += f'{v:<20} '
                         s += '\n'
                     s += '#\n'
                 else:
                     v = self.db[key]
-                    if re.match(regex,str(v)):
+                    if re.search(regex,str(v)):
                         v = f'"{v}"'
                     s += f'_{key:<30} {v}\n'
 
@@ -156,14 +156,14 @@ class Block:
                         sf.write( f'_{col}\n')
                     for idx in df.index.values:
                         for v in df.loc[idx]:
-                            if re.match(regex,str(v)):
+                            if re.search(regex,str(v)):
                                 v = f'"{v}"'
                             sf.write(f'{v:<20} ')
                         sf.write('\n')
                     sf.write('#\n')
                 else:
                     v = self.db[key]
-                    if re.match(regex,str(v)):
+                    if re.search(regex,str(v)):
                         v = f'"{v}"'
                     sf.write(f'_{key:<30} {v}\n')
 
