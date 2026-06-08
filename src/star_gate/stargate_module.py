@@ -116,7 +116,7 @@ class Block:
         for key in self.db.keys():
             value = self.db[key]
             if key != 'db_id' and key != 'db_type':
-                if isinstance(value,Table):
+                if isinstance(value,Table) and not value.is_empty():
                     # The value is a table
                     s += '#\nloop_\n'
                     for col in value.columns:
@@ -148,7 +148,7 @@ class Block:
         for key in self.db.keys():
             value = self.db[key]
             if key != 'db_id' and key != 'db_type':
-                if isinstance(value,Table) and value.df is not None:
+                if isinstance(value,Table) and not value.is_empty():
                     df = value.df
                     # The value is a table
                     sf.write('#\nloop_\n')
@@ -186,26 +186,32 @@ class Table:
         """
         self._id = tname
         self.df = None
+        self._empty = True
         
     def from_data(self,data=None,*,columns=None):
         if isinstance(data,dict):
             self.df = pd.DataFrame(data['rows'],columns=data['columns'])
+            self._empty = False
         else:
             self.df = pd.DataFrame(data=data, columns=columns)
+            self._empty = False
     
     # def from_dict(self,dict):
     #     self.df = pd.DataFrame(dict,index=[0])
 
     @property
     def columns(self):
-        return self.df.columns
+        return self.df.columns if not self._empty() else None
     
     @columns.setter
     def columns(self, colnames):
         self.df.columns = colnames
 
+    def is_empty(self):
+        return self._empty
+    
     def rows(self):
-        return self.df.data
+        return self.df.data if not self._empty() else None
 
     def dataframe(self,colindex=0):
         """
@@ -244,6 +250,7 @@ class Table:
             print('ERROR: Not supported')
         # Remove duplicates if any
         self.df = self.df.drop_duplicates().reset_index(drop=True)
+        self._empty = False
     
     def concat(self,rows):
         """
@@ -259,6 +266,7 @@ class Table:
         self.df = pd.concat([self.df,row_df], ignore_index=True)
         # Remove duplicates if any
         self.df = self.df.drop_duplicates().reset_index(drop=True)
+        self._empty = False
     
     def column(self,colname):
         """
