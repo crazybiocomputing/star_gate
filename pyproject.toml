@@ -12,7 +12,8 @@ license-files = ["LICENSE"]
 description = "A package for reading/writing STAR and mmCIF file"
 requires-python = ">=3.11"
 dependencies = [
-    "pandas"
+    "pandas",
+    "pytest>=7"
 ]
 
 [tool.setuptools.packages.find]

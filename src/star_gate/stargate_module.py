@@ -1,4 +1,5 @@
 from datetime import datetime
+import json
 import numpy as np
 import pandas as pd
 import re
@@ -413,6 +414,11 @@ class StarGate:
                 d[k] = self.to_json(v)
         return d
     
+    def to_jsonfile(self, filename):
+        with open(filename,'w') as fp:
+            json.dump(self.db, fp,sort_keys=True, indent=4,ensure_ascii=False)
+
+
     def to_object(self,mmcif=False):
         def obj_dic(d):
             top = type('new', (object,), d)
